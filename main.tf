@@ -12,15 +12,13 @@
 #   https://www.terraform.io/docs/providers/aws/r/launch_configuration.html
 
 module "enabled" {
-  source  = "devops-workflow/boolean/local"
-  version = "0.1.1"
+  source  = "git::https://github.com/WiserSolutions/terraform-local-boolean.git"
   value   = "${var.enabled}"
 }
 
 # Define composite variables for resources
 module "label" {
-  source        = "devops-workflow/label/local"
-  version       = "0.2.1"
+  source        = "git::https://github.com/WiserSolutions/terraform-local-label.git"
   attributes    = "${var.attributes}"
   component     = "${var.component}"
   delimiter     = "${var.delimiter}"
