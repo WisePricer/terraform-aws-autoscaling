@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/WisePricer/terraform-aws-autoscaling/tree/master.svg?style=svg)](https://circleci.com/gh/WisePricer/terraform-aws-autoscaling/tree/master)
+[![CircleCI](https://circleci.com/gh/devops-workflow/terraform-aws-autoscaling/tree/master.svg?style=svg)](https://circleci.com/gh/devops-workflow/terraform-aws-autoscaling/tree/master)
 
 AWS Auto Scaling Group (ASG) Terraform module
 ================================================
@@ -15,7 +15,7 @@ Usage
 
 ```hcl
 module "asg" {
-  source = "terraform-aws-modules/autoscaling/aws"
+  source = "devops-workflow/autoscaling/aws"
 
   name = "service"
 

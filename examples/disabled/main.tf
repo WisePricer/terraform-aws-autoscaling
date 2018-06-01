@@ -51,17 +51,16 @@ data "aws_ami" "amazon_linux" {
 # Launch configuration and autoscaling group
 ######
 module "example" {
-  source    = "../../"
-
-  name      = "example-with-ec2"
-  enabled   = false
+  source  = "../../"
+  name    = "example-with-ec2"
+  enabled = false
 
   # Launch configuration
   #
   # launch_configuration = "my-existing-launch-configuration" # Use the existing launch configuration
   # create_lc = false # disables creation of launch configuration
   #lc_name = "example-lc"
-  environment   = "${var.environment}"
+  environment = "${var.environment}"
 
   image_id                    = "${data.aws_ami.amazon_linux.id}"
   instance_type               = "t2.micro"
@@ -79,26 +78,23 @@ module "example" {
 
   root_block_device = [
     {
-      volume_size = "50"
-      volume_type = "gp2"
+      volume_size           = "50"
+      volume_type           = "gp2"
       delete_on_termination = true
     },
   ]
 
   # Auto scaling group
   #asg_name                  = "example-asg"
-  vpc_zone_identifier       = ["${data.aws_subnet_ids.all.ids}"]
+  vpc_zone_identifier = ["${data.aws_subnet_ids.all.ids}"]
+
   health_check_type         = "EC2"
   min_size                  = 0
   max_size                  = 1
   desired_capacity          = 1
   wait_for_capacity_timeout = 0
 
-  tags_ag = [
-    {
-      key                 = "Project"
-      value               = "megasecret"
-      propagate_at_launch = true
-    },
-  ]
+  tags = {
+    Project = "megasecret"
+  }
 }

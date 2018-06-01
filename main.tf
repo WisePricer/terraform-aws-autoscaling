@@ -1,4 +1,3 @@
-
 ###
 ### Terraform AWS Autoscaling
 ###
@@ -21,15 +20,36 @@ module "enabled" {
 # Define composite variables for resources
 module "label" {
   source        = "devops-workflow/label/local"
-  version       = "0.1.3"
-  organization  = "${var.organization}"
+  version       = "0.2.1"
+  attributes    = "${var.attributes}"
+  component     = "${var.component}"
+  delimiter     = "${var.delimiter}"
+  environment   = "${var.environment}"
+  monitor       = "${var.monitor}"
   name          = "${var.name}"
   namespace-env = "${var.namespace-env}"
   namespace-org = "${var.namespace-org}"
-  environment   = "${var.environment}"
-  delimiter     = "${var.delimiter}"
-  attributes    = "${var.attributes}"
+  organization  = "${var.organization}"
+  owner         = "${var.owner}"
+  product       = "${var.product}"
+  service       = "${var.service}"
   tags          = "${var.tags}"
+  team          = "${var.team}"
+}
+
+# NOTE: Terraform converts true to 1.
+data "null_data_source" "tags_asg" {
+  count = "${module.enabled.value ? length(keys(module.label.tags)) : 0}"
+
+  inputs = "${map(
+    "key", "${element(keys(module.label.tags), count.index)}",
+    "value", "${element(values(module.label.tags), count.index)}",
+    "propagate_at_launch", "true"
+  )}"
+}
+
+locals {
+  tags_asg = ["${data.null_data_source.tags_asg.*.outputs}"]
 }
 
 #######################
@@ -39,25 +59,26 @@ resource "aws_launch_configuration" "this" {
   count = "${module.enabled.value && var.launch_configuration == "" ? 1 : 0 }"
 
   name_prefix                 = "${coalesce(var.lc_name, module.label.id)}-"
-  image_id                    = "${var.image_id}"
-  instance_type               = "${var.instance_type}"
-  iam_instance_profile        = "${var.iam_instance_profile}"
-  key_name                    = "${var.key_name}"
-  security_groups             = ["${var.security_groups}"]
   associate_public_ip_address = "${var.associate_public_ip_address}"
-  user_data                   = "${var.user_data}"
-  enable_monitoring           = "${var.enable_monitoring}"
-  placement_tenancy           = "${var.placement_tenancy}"
   ebs_block_device            = "${var.ebs_block_device}"
   ebs_optimized               = "${var.ebs_optimized}"
+  enable_monitoring           = "${var.enable_monitoring}"
   ephemeral_block_device      = "${var.ephemeral_block_device}"
+  iam_instance_profile        = "${var.iam_instance_profile}"
+  image_id                    = "${var.image_id}"
+  instance_type               = "${var.instance_type}"
+  key_name                    = "${var.key_name}"
+  placement_tenancy           = "${var.spot_price == "0" ? var.placement_tenancy : ""}"
   root_block_device           = "${var.root_block_device}"
+  security_groups             = ["${var.security_groups}"]
+  spot_price                  = "${var.spot_price == "0" ? "" : var.spot_price}"
+  user_data                   = "${var.user_data}"
+
   lifecycle {
     create_before_destroy = true
   }
-  #spot_price      = "${var.spot_price == "0" ? "" : var.spot_price}"
-  # spot_price                  = "${var.spot_price}"  // placement_tenancy does not work with spot_price
 }
+
 /*
 # Attempt at improving the issue where it cannot delete the old LC on changes
 resource "null_resource" "delay" {
@@ -78,16 +99,17 @@ resource "null_resource" "delay" {
 # Autoscaling group
 ####################
 resource "aws_autoscaling_group" "this" {
-  /*depends_on = [
-    "null_resource.delay"
-  ]*/
-  count                 = "${module.enabled.value}"
-  name_prefix           = "${coalesce(var.asg_name, module.label.id)}-"
-  launch_configuration  = "${var.launch_configuration == "" ? element(aws_launch_configuration.this.*.name, 0) : var.launch_configuration}"
-  vpc_zone_identifier   = ["${var.vpc_zone_identifier}"]
-  max_size              = "${var.max_size}"
-  min_size              = "${var.min_size}"
-  desired_capacity      = "${var.desired_capacity}"
+  #depends_on = [
+  #  "null_resource.delay"
+  #]
+  count = "${module.enabled.value}"
+
+  name_prefix          = "${coalesce(var.asg_name, module.label.id)}-"
+  launch_configuration = "${var.launch_configuration == "" ? element(concat(aws_launch_configuration.this.*.name, list("")), 0) : var.launch_configuration}"
+  vpc_zone_identifier  = ["${var.vpc_zone_identifier}"]
+  max_size             = "${var.max_size}"
+  min_size             = "${var.min_size}"
+  desired_capacity     = "${var.desired_capacity}"
 
   load_balancers            = ["${var.load_balancers}"]
   health_check_grace_period = "${var.health_check_grace_period}"
@@ -102,19 +124,12 @@ resource "aws_autoscaling_group" "this" {
   placement_group           = "${var.placement_group}"
   protect_from_scale_in     = "${var.protect_from_scale_in}"
   suspended_processes       = "${var.suspended_processes}"
+  tags                      = ["${local.tags_asg}"]
   target_group_arns         = ["${var.target_group_arns}"]
   termination_policies      = "${var.termination_policies}"
   wait_for_capacity_timeout = "${var.wait_for_capacity_timeout}"
   wait_for_elb_capacity     = "${var.wait_for_elb_capacity}"
 
-  tags = ["${ concat(
-    list(
-      map("key", "Name", "value", module.label.id, "propagate_at_launch", true),
-      map("key", "Environment", "value", module.label.environment, "propagate_at_launch", true),
-      map("key", "Terraform", "value", "true", "propagate_at_launch", true)
-    ),
-    var.tags_ag
-  )}"]
   lifecycle {
     create_before_destroy = true
   }
