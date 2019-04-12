@@ -12,8 +12,8 @@
 #   https://www.terraform.io/docs/providers/aws/r/launch_configuration.html
 
 module "enabled" {
-  source  = "git::https://github.com/WiserSolutions/terraform-local-boolean.git"
-  value   = "${var.enabled}"
+  source = "git::https://github.com/WiserSolutions/terraform-local-boolean.git"
+  value  = "${var.enabled}"
 }
 
 # Define composite variables for resources
