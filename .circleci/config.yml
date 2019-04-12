@@ -61,7 +61,6 @@ jobs:
               echo "Running tflint..."
               /usr/local/tflint/bin/tflint --version
               /usr/local/tflint/bin/tflint
-
 workflows:
   version: 2
   build:
