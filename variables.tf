@@ -20,7 +20,6 @@ variable "delimiter" {
 variable "environment" {
   description = "Environment (ex: `dev`, `qa`, `stage`, `prod`). (Second or top level namespace. Depending on namespacing options)"
   type        = "string"
-  default     = ""
 }
 
 variable "monitor" {
@@ -32,7 +31,6 @@ variable "monitor" {
 variable "name" {
   description = "Base name for resource"
   type        = "string"
-  default     = ""
 }
 
 variable "namespace-env" {
