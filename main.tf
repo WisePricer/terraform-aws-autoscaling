@@ -21,7 +21,7 @@ module "enabled" {
 #######################
 resource "aws_launch_configuration" "this" {
   count = "${module.enabled.value && var.launch_configuration == "" ? 1 : 0 }"
-  name_prefix                 = "${var.lc_name}"
+  name_prefix                 = "launch_config_"
   associate_public_ip_address = "${var.associate_public_ip_address}"
   ebs_block_device            = "${var.ebs_block_device}"
   ebs_optimized               = "${var.ebs_optimized}"
@@ -64,7 +64,10 @@ resource "aws_autoscaling_group" "this" {
   placement_group           = "${var.placement_group}"
   protect_from_scale_in     = "${var.protect_from_scale_in}"
   suspended_processes       = "${var.suspended_processes}"
-  tags                      = ["${var.asg_name}"]
+  tags 
+      {
+        Name = "${var.asg_name}"
+      }
   target_group_arns         = ["${var.target_group_arns}"]
   termination_policies      = "${var.termination_policies}"
   wait_for_capacity_timeout = "${var.wait_for_capacity_timeout}"
