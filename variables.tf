@@ -1,7 +1,8 @@
 // Variables specific to module label
-variable "environment" {
+variable "env" {
   description = "Environment (ex: `dev`, `qa`, `stage`, `prod`). (Second or top level namespace. Depending on namespacing options)"
   type        = "string"
+  default = ""
 }
 
 variable "name" {
