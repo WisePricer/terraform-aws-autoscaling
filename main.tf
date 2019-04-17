@@ -47,7 +47,7 @@ resource "aws_launch_configuration" "this" {
 ####################
 resource "aws_autoscaling_group" "this" {
   count = "${module.enabled.value}"
-  name_prefix          = "${var.asg_name}"
+  name_prefix          = "asg_"
   launch_configuration = "${var.launch_configuration == "" ? element(concat(aws_launch_configuration.this.*.name, list("")), 0) : var.launch_configuration}"
   vpc_zone_identifier  = ["${var.vpc_zone_identifier}"]
   max_size             = "${var.max_size}"
@@ -64,7 +64,7 @@ resource "aws_autoscaling_group" "this" {
   placement_group           = "${var.placement_group}"
   protect_from_scale_in     = "${var.protect_from_scale_in}"
   suspended_processes       = "${var.suspended_processes}"
-  tags                      = "${var.asg_name}"
+  tags                      = ["${var.asg_name}"]
   target_group_arns         = ["${var.target_group_arns}"]
   termination_policies      = "${var.termination_policies}"
   wait_for_capacity_timeout = "${var.wait_for_capacity_timeout}"
